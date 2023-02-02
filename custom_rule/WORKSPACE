@@ -1,0 +1,42 @@
+workspace(
+    name = "custom_rule"
+)
+
+local_repository(
+    name = "typescript_project",
+    path = "../typescript_project",
+)
+
+# Dependencies for typescript_project
+
+load("@typescript_project//:repositories.bzl", "typescript_project_repositories")
+# typescript_project_repositories(fixed = True)
+typescript_project_repositories(fixed = False)
+
+load("@aspect_rules_js//js:repositories.bzl", "rules_js_dependencies")
+rules_js_dependencies()
+
+load("@aspect_rules_ts//ts:repositories.bzl", "rules_ts_dependencies")
+rules_ts_dependencies(
+    ts_version_from = "@typescript_project//:package.json",
+)
+
+load("@rules_nodejs//nodejs:repositories.bzl", "nodejs_register_toolchains")
+nodejs_register_toolchains(
+    name = "nodejs",
+    node_version = "18.12.1",
+)
+
+load("@aspect_rules_js//npm:npm_import.bzl", "npm_translate_lock", "pnpm_repository")
+
+npm_translate_lock(
+    name = "npm",
+    pnpm_lock = "@typescript_project//:pnpm-lock.yaml",
+    update_pnpm_lock = True,
+    data = ["@typescript_project//:package.json"],
+)
+
+load("@npm//:repositories.bzl", "npm_repositories")
+npm_repositories()
+
+pnpm_repository(name = "pnpm")

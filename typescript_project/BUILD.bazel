@@ -1,0 +1,46 @@
+load("@npm//:defs.bzl", "npm_link_all_packages")
+load("@aspect_rules_js//js:defs.bzl", "js_binary", "js_library")
+load("@aspect_rules_ts//ts:defs.bzl", "ts_project")
+
+package(default_visibility = ["//visibility:public"])
+
+npm_link_all_packages(name = "node_modules")
+
+ts_project(
+    name = "compile_typescript",
+    srcs = ["index.ts"],
+    tsconfig = "//:tsconfig.json",
+    source_map = False,
+    declaration = False,
+    allow_js = False,
+    validate = False,
+    args = [
+        "--module",
+        "esnext",
+        "--moduleResolution",
+        "node",
+    ],
+    supports_workers = False,
+    deps = [
+        "//:node_modules/@types/node",
+    ],
+)
+
+js_library(
+    name = "library",
+    srcs = [
+        "package.json",
+        ":compile_typescript",
+    ],
+)
+
+js_binary(
+    name = "binary",
+    entry_point = "index.js",
+    env = {
+        "BAZEL_BINDIR": ".",
+    },
+    data = [
+        "package.json",
+    ],
+)

@@ -1,0 +1,7 @@
+load("rule.bzl", "call_binary")
+
+call_binary(
+    name = "do_stuff",
+    out = "output.txt",
+    binary = "@typescript_project//:binary",
+)
